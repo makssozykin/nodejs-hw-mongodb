@@ -1,16 +1,28 @@
 import express from 'express';
 import cors from 'cors';
-import pino from 'pino';
-import pinoHttp from 'pino-http';
+import pino from 'pino-http';
+import dotenv from 'dotenv';
+import { router } from './routers/contacts.js';
 
-const PORT = 3000;
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
 
 export const startServer = () => {
   const app = express();
-  const logger = pino();
+
+  app.use(express.json());
 
   app.use(cors());
-  app.use(pinoHttp({ logger }));
+  app.use(
+    pino({
+      transport: {
+        target: 'pino-pretty',
+      },
+    }),
+  );
+
+  app.use('/contacts', router);
 
   app.use((req, res) => {
     res.status(404).json({
