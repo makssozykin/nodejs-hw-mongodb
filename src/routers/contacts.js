@@ -1,6 +1,8 @@
 import { Router } from 'express';
-import { getAllContacts } from '../controllers/contacts.js';
+import { getAllContacts, getContactById } from '../controllers/contacts.js';
 
-export const router = Router();
+export const contactRouter = Router();
 
-router.get('/', getAllContacts);
+contactRouter.get('/', getAllContacts);
+
+contactRouter.get('/:contactId', getContactById);
