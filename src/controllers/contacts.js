@@ -66,8 +66,7 @@ export const patchContactController = async (req, res, next) => {
     throw createHttpError(401, 'User is not logged in ');
   }
   const { contactId } = req.params;
-  const contactAndUserId = { userId, _id: contactId };
-  const result = await updateContact(contactAndUserId, req.body);
+  const result = await updateContact(userId, contactId, req.body);
 
   if (!result) {
     next(createHttpError(404, 'Contact not found'));
