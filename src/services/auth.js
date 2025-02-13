@@ -1,10 +1,17 @@
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import Handlebars from 'handlebars';
 import createHttpError from 'http-errors';
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UsersCollection } from '../db/models/user.js';
 import { SessionsCollection } from '../db/models/session.js';
-import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/contacts.js';
+import {
+  FIFTEEN_MINUTES,
+  ONE_DAY,
+  TEMPLATES_DIR,
+} from '../constants/contacts.js';
 
 import { SMTP } from '../constants/contacts.js';
 import { getEnvVar } from '../utils/getEnvVar.js';
@@ -109,12 +116,47 @@ export const requestResetToken = async (email) => {
     },
   );
 
+  const resetPasswordPath = path.join(
+    TEMPLATES_DIR,
+    'reset-password-email.html',
+  );
+  const templateSource = (await fs.readFile(resetPasswordPath)).toString();
+  const template = Handlebars.compile(templateSource);
+  const html = template({
+    name: user.name,
+    link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
+  });
+
   await sendEmail({
     from: getEnvVar(SMTP.SMTP_FROM),
     to: email,
     subject: 'Your password reset',
-    html: `Click <a href="${getEnvVar(
-      'APP_DOMAIN',
-    )}/reset-password?token=${resetToken}">here</a> to reset your password!</p>`,
+    html,
   });
+};
+
+export const resetPassword = async (payload) => {
+  let entries;
+  try {
+    entries = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
+  } catch (err) {
+    if (err instanceof Error)
+      throw createHttpError(401, 'Token is expired or invalid.');
+    throw err;
+  }
+
+  const user = await UsersCollection.findOne({
+    email: entries.email,
+    _id: entries.sub,
+  });
+  if (!user) {
+    throw createHttpError(404, 'User not found!');
+  }
+
+  const encryptedPassword = await bcrypt.hash(payload.password, 10);
+
+  await UsersCollection.updateOne(
+    { _id: user._id },
+    { password: encryptedPassword },
+  );
 };
