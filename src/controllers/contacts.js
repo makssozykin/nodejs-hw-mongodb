@@ -2,6 +2,7 @@ import createHttpError from 'http-errors';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
 import {
   createContact,
   getAllContacts,
@@ -51,7 +52,12 @@ export const createContactController = async (req, res) => {
   if (!userId) {
     throw createHttpError(401, 'User is not logged in ');
   }
-  const contact = await createContact({ ...req.body, userId });
+  const photo = req.file;
+  let photoUrl;
+  if (photo) {
+    photoUrl = await saveFileToUploadDir(photo);
+  }
+  const contact = await createContact({ ...req.body, userId, photo: photoUrl });
 
   res.status(201).json({
     status: 201,
@@ -66,7 +72,15 @@ export const patchContactController = async (req, res, next) => {
     throw createHttpError(401, 'User is not logged in ');
   }
   const { contactId } = req.params;
-  const result = await updateContact(userId, contactId, req.body);
+  const photo = req.file;
+  let photoUrl;
+  if (photo) {
+    photoUrl = await saveFileToUploadDir(photo);
+  }
+  const result = await updateContact(userId, contactId, {
+    ...req.body,
+    photo: photoUrl,
+  });
 
   if (!result) {
     next(createHttpError(404, 'Contact not found'));
