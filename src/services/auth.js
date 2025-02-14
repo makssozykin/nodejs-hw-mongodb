@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import Handlebars from 'handlebars';
+import handlebars from 'handlebars';
 import createHttpError from 'http-errors';
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
@@ -121,7 +121,7 @@ export const requestResetToken = async (email) => {
     'reset-password-email.html',
   );
   const templateSource = (await fs.readFile(resetPasswordPath)).toString();
-  const template = Handlebars.compile(templateSource);
+  const template = handlebars.compile(templateSource);
   const html = template({
     name: user.name,
     link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
