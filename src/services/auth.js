@@ -127,12 +127,20 @@ export const requestResetToken = async (email) => {
     link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
   });
 
-  await sendEmail({
-    from: getEnvVar(SMTP.SMTP_FROM),
-    to: email,
-    subject: 'Your password reset',
-    html,
-  });
+  try {
+    await sendEmail({
+      from: getEnvVar(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Your password reset',
+      html,
+    });
+  } catch (error) {
+    console.log(error);
+    throw createHttpError(
+      500,
+      'Failed to send the email, please try again later.',
+    );
+  }
 };
 
 export const resetPassword = async (payload) => {
