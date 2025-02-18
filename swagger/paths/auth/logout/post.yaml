@@ -1,6 +1,6 @@
 tags:
   - Auth
-summary: Log out user
+summary: Logout user
 operationId: logoutUser
 description: 'Log out user'
 security: []

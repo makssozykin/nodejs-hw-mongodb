@@ -1,0 +1,44 @@
+tags:
+  - Auth
+summary: Confirm OAuth
+operationId: loginOrSignupWithGoogle
+description: 'Confirm login Or SignUp With Google'
+security: []
+requestBody:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: 'login ticket'
+            type: string
+            example: '4/0ASVgi3JusYiHKqUBomJXa5QEgwG_WLUnJf0LijaHcPrPLaSP-NPXNwv-YbRLfz8t7U32-w'
+responses:
+  '200':
+    description: Successfully logged in via Google OAuth!
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Successfully logged in via Google OAuth!
+            data:
+              type: object
+              required:
+                - accessToken
+              properties:
+                accessToken:
+                  type: string
+                  example: 'buI6yiGzUw2/xxN8nad9JsV9wuQGHGVZJC4zuEHJ'
